@@ -1,0 +1,45 @@
+---
+name: blog
+metadata:
+  repo: "https://github.com/clux/blog-docker"
+  team: observability
+  squad: observability
+  tribe: platform-engineering
+  gitTagTemplate: "{{ version }}"
+  support: CA04UJ8S0
+  notifications: CA04UJ8S0
+  runbook: ~
+  description: ~
+chart: base
+image: clux/blog
+version: 0.1.0
+resources:
+  requests:
+    cpu: 50m
+    memory: 100Mi
+  limits:
+    cpu: 100m
+    memory: 100Mi
+replicaCount: 1
+env:
+  plain:
+    FOO: BAR
+httpPort: 80
+health:
+  uri: /
+  wait: 0
+autoScaling:
+  minReplicas: 1
+  maxReplicas: 4
+  metrics:
+    - resource:
+        name: cpu
+        target:
+          averageUtilization: 50
+          type: Utilization
+      type: Resource
+region: minikube
+environment: example
+namespace: apps
+uid: FAKE-GUID
+workload: Deployment

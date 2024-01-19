@@ -125,7 +125,7 @@ impl ManifestDefaults {
 
     fn from_global(conf: &Config) -> Result<Self> {
         match serde_yaml::from_value(conf.defaults.clone()) {
-            Err(e) => bail!("Global defaults did not parse as YAML: {}", e),
+            Err(e) => bail!("Global defaults did not parse as YAML: {}, {:?} ", e, conf),
             Ok(d) => Ok(d),
         }
     }

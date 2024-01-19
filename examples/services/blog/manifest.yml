@@ -3,7 +3,7 @@ image: clux/blog
 version: 0.1.0
 metadata:
   team: observability
-  repo: https://github.com/clux/blog
+  repo: https://github.com/clux/blog-docker
 
 # kubernetes resources
 resources:
@@ -24,8 +24,8 @@ httpPort: 80
 
 # what regions it's deployed to
 regions:
-- minikube
-- kind
+  - minikube
+  - kind
 
 # how it decides how many replicas to use
 autoScaling:

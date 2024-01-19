@@ -1,0 +1,153 @@
+---
+# Source: base/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: blog
+  labels:
+    app: blog
+    type: service
+    app.kubernetes.io/name: blog
+    app.kubernetes.io/version: 0.1.0
+    app.kubernetes.io/managed-by: shipcat
+  ownerReferences:
+  - apiVersion: babylontech.co.uk/v1
+    kind: ShipcatManifest
+    controller: false
+    name: blog
+    uid: FAKE-GUID
+automountServiceAccountToken: false
+---
+# Source: base/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: blog
+  labels:
+    app: blog
+    type: service
+    app.kubernetes.io/name: blog
+    app.kubernetes.io/version: 0.1.0
+    app.kubernetes.io/managed-by: shipcat
+  ownerReferences:
+  - apiVersion: babylontech.co.uk/v1
+    kind: ShipcatManifest
+    controller: false
+    name: blog
+    uid: FAKE-GUID
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: blog
+---
+# Source: base/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blog
+  labels:
+    app: blog
+    type: service
+    app.kubernetes.io/name: blog
+    app.kubernetes.io/version: 0.1.0
+    app.kubernetes.io/managed-by: shipcat
+  ownerReferences:
+  - apiVersion: babylontech.co.uk/v1
+    kind: ShipcatManifest
+    controller: false
+    name: blog
+    uid: FAKE-GUID
+spec:
+  revisionHistoryLimit: 20
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+  minReadySeconds: 10
+  selector:
+    matchLabels:
+      app: blog
+  template:
+    metadata:
+      labels:
+        app: blog
+      annotations:
+        checksum/config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+        checksum/secrets: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+    spec:
+      serviceAccountName: blog
+      #imagePullSecrets:
+      containers:
+      - name: blog
+        image: "clux/blog:0.1.0"
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            cpu: 100m
+            memory: 100Mi
+          requests:
+            cpu: 50m
+            memory: 100Mi
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 0
+          periodSeconds: 5
+
+        env:
+        - name: FOO
+          value: "BAR"
+        - name: SERVICE_NAME
+          value: blog
+        - name: ENV_NAME
+          value: example
+        - name: REGION_NAME
+          value: minikube
+        - name: SERVICE_VERSION
+          value: 0.1.0
+
+        # volume mounts from the special case configMap or explicit mounts
+        volumeMounts:
+
+      volumes:
+      #  other volumes
+---
+# Source: base/templates/hpa.yaml
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: blog
+  labels:
+    app: blog
+    app.kubernetes.io/name: blog
+    app.kubernetes.io/version: 0.1.0
+    app.kubernetes.io/managed-by: shipcat
+  ownerReferences:
+  - apiVersion: babylontech.co.uk/v1
+    kind: ShipcatManifest
+    controller: false
+    name: blog
+    uid: FAKE-GUID
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: blog
+  maxReplicas: 4
+  metrics:
+  - resource:
+      name: cpu
+      target:
+        averageUtilization: 50
+        type: Utilization
+    type: Resource
+  minReplicas: 1
+
